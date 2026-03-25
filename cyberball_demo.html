@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyberball 練習</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100vw;height:100vh;background:#1c2333;font-family:'Noto Sans TC',sans-serif;color:#e8eaf0;overflow:hidden;}
+
+#connecting-screen{position:fixed;top:0;left:0;width:100vw;height:100vh;background:#1c2333;display:flex;align-items:center;justify-content:center;z-index:99997;}
+.conn-card{text-align:center;padding:48px 56px;background:#232b3e;border-radius:20px;border:1px solid #2e3a52;max-width:480px;box-shadow:0 8px 32px #00000066;}
+.conn-card h2{font-size:1.3rem;color:#8aaede;margin-bottom:18px;font-weight:500;}
+.conn-card p{color:#7a8499;line-height:2;font-size:1rem;}
+.dot-loader{margin-top:28px;display:flex;gap:8px;justify-content:center;}
+.dot-loader span{width:10px;height:10px;border-radius:50%;background:#4a7fc1;animation:bounce 1.2s infinite ease-in-out;}
+.dot-loader span:nth-child(2){animation-delay:.2s}
+.dot-loader span:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+#game-screen{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#1c2333;flex-direction:column;align-items:center;z-index:99998;}
+#topbar{width:100%;padding:12px 24px;background:#1a2030;border-bottom:1px solid #2a3347;font-size:.82rem;color:#5a6a84;text-align:center;letter-spacing:.04em;}
+#main-layout{display:flex;flex-direction:column;align-items:center;flex:1;}
+#arena{position:relative;width:700px;height:460px;flex-shrink:0;}
+.player-wrap{position:absolute;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:default;}
+.player-wrap.clickable{cursor:pointer;}
+.player-wrap.clickable:hover svg .body-rect{filter:brightness(1.35);}
+.player-label{font-size:.78rem;font-weight:700;letter-spacing:.05em;color:#8aaede;text-transform:uppercase;}
+.player-wrap.has-ball svg .head-circle{stroke:#f5c842;stroke-width:3;filter:drop-shadow(0 0 8px #f5c84299);}
+#p1{top:30px;left:70px;}
+#p2{bottom:80px;left:50%;transform:translateX(-50%);}
+#p3{top:30px;right:70px;}
+#ball{position:absolute;width:26px;height:26px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#ffe066,#c8900a);box-shadow:0 2px 8px #0006,0 0 4px #f5c84244;z-index:20;pointer-events:none;}
+#statusbar{margin-top:8px;font-size:.78rem;color:#3e5070;min-height:18px;text-align:center;letter-spacing:.03em;}
+
+#end-screen{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#1c2333;flex-direction:column;align-items:center;justify-content:center;z-index:999999;}
+</style>
+</head>
+<body>
+
+<div id="connecting-screen">
+  <div class="conn-card">
+    <h2>練習開始</h2>
+    <p>即將進入練習遊戲...<br>熟悉操作後即可開始正式遊戲！</p>
+    <div class="dot-loader"><span></span><span></span><span></span></div>
+  </div>
+</div>
+
+<div id="game-screen">
+  <div id="topbar">練習模式 — 當球傳給你時，點擊對方傳球</div>
+  <div id="main-layout">
+    <div id="arena">
+      <div class="player-wrap" id="p1">
+        <svg id="svg1" width="64" height="100" viewBox="0 0 64 100">
+          <circle class="head-circle" cx="32" cy="20" r="14" fill="#3d5a7a"/>
+          <g id="face1-neutral"><circle cx="27" cy="19" r="2.2" fill="#8aaede"/><circle cx="37" cy="19" r="2.2" fill="#8aaede"/><path d="M27 25 Q32 28 37 25" stroke="#8aaede" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+          <g id="face1-happy" visibility="hidden"><circle cx="27" cy="18" r="2.2" fill="#ffe066"/><circle cx="37" cy="18" r="2.2" fill="#ffe066"/><path d="M25 24 Q32 31 39 24" stroke="#ffe066" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+          <rect class="body-rect" x="20" y="36" width="24" height="28" rx="6" fill="#2d4a6a"/>
+          <line x1="20" y1="44" x2="8" y2="58" stroke="#2d4a6a" stroke-width="6" stroke-linecap="round"/>
+          <line x1="44" y1="44" x2="56" y2="58" stroke="#2d4a6a" stroke-width="6" stroke-linecap="round"/>
+          <line x1="27" y1="64" x2="22" y2="86" stroke="#2d4a6a" stroke-width="6" stroke-linecap="round"/>
+          <line x1="37" y1="64" x2="42" y2="86" stroke="#2d4a6a" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="player-label">Alex</div>
+      </div>
+      <div class="player-wrap" id="p2">
+        <svg id="svg2" width="64" height="100" viewBox="0 0 64 100">
+          <circle class="head-circle" cx="32" cy="20" r="14" fill="#5a4a20"/>
+          <g id="face2-neutral"><circle cx="27" cy="19" r="2.2" fill="#f5e060"/><circle cx="37" cy="19" r="2.2" fill="#f5e060"/><path d="M27 25 Q32 28 37 25" stroke="#f5e060" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+          <g id="face2-happy" visibility="hidden"><circle cx="27" cy="18" r="2.2" fill="#ffe066"/><circle cx="37" cy="18" r="2.2" fill="#ffe066"/><path d="M25 24 Q32 31 39 24" stroke="#ffe066" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+          <rect class="body-rect" x="20" y="36" width="24" height="28" rx="6" fill="#4e3e10"/>
+          <line x1="20" y1="44" x2="8" y2="58" stroke="#4e3e10" stroke-width="6" stroke-linecap="round"/>
+          <line x1="44" y1="44" x2="56" y2="58" stroke="#4e3e10" stroke-width="6" stroke-linecap="round"/>
+          <line x1="27" y1="64" x2="22" y2="86" stroke="#4e3e10" stroke-width="6" stroke-linecap="round"/>
+          <line x1="37" y1="64" x2="42" y2="86" stroke="#4e3e10" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="player-label">你</div>
+      </div>
+      <div class="player-wrap" id="p3">
+        <svg id="svg3" width="64" height="100" viewBox="0 0 64 100">
+          <circle class="head-circle" cx="32" cy="20" r="14" fill="#3d5a7a"/>
+          <g id="face3-neutral"><circle cx="27" cy="19" r="2.2" fill="#8aaede"/><circle cx="37" cy="19" r="2.2" fill="#8aaede"/><path d="M27 25 Q32 28 37 25" stroke="#8aaede" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>
+          <g id="face3-happy" visibility="hidden"><circle cx="27" cy="18" r="2.2" fill="#ffe066"/><circle cx="37" cy="18" r="2.2" fill="#ffe066"/><path d="M25 24 Q32 31 39 24" stroke="#ffe066" stroke-width="2" fill="none" stroke-linecap="round"/></g>
+          <rect class="body-rect" x="20" y="36" width="24" height="28" rx="6" fill="#2d4a6a"/>
+          <line x1="20" y1="44" x2="8" y2="58" stroke="#2d4a6a" stroke-width="6" stroke-linecap="round"/>
+          <line x1="44" y1="44" x2="56" y2="58" stroke="#2d4a6a" stroke-width="6" stroke-linecap="round"/>
+          <line x1="27" y1="64" x2="22" y2="86" stroke="#2d4a6a" stroke-width="6" stroke-linecap="round"/>
+          <line x1="37" y1="64" x2="42" y2="86" stroke="#2d4a6a" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="player-label">Jess</div>
+      </div>
+      <div id="ball"></div>
+    </div>
+    <div id="statusbar"></div>
+  </div>
+</div>
+
+<div id="end-screen">
+  <div style="text-align:center;padding:48px 56px;background:#232b3e;border-radius:20px;border:1px solid #2e3a52;max-width:480px;box-shadow:0 8px 32px #00000066;">
+    <h2 style="font-size:1.3rem;color:#8aaede;margin-bottom:12px;font-weight:500;">練習完成！</h2>
+    <p style="color:#7a8499;line-height:2;font-size:.95rem;">你已經熟悉操作了。<br>請告知研究人員，準備開始正式遊戲。</p>
+  </div>
+</div>
+
+<script>
+const POS = {1:{x:102,y:88}, 2:{x:350,y:360}, 3:{x:598,y:88}};
+
+const THROWS = [
+  {to:2,d:1500},{to:3,d:1500},{to:1,d:1500},
+  {to:2,d:1500},{to:3,d:1500},{to:1,d:1500},
+  {to:2,d:1500},{to:3,d:1500},{to:1,d:1500},
+  {to:2,d:1500},
+];
+
+let holder=1, waitingHuman=false, throwIdx=0;
+let gameOver=false, faceTimers={};
+const _audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+
+function playThrowSound(){
+  try{
+    const osc=_audioCtx.createOscillator(),gain=_audioCtx.createGain();
+    osc.connect(gain);gain.connect(_audioCtx.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(520,_audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(280,_audioCtx.currentTime+0.18);
+    gain.gain.setValueAtTime(0.18,_audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,_audioCtx.currentTime+0.22);
+    osc.start();osc.stop(_audioCtx.currentTime+0.22);
+  }catch(e){}
+}
+
+function playCatchSound(){
+  try{
+    const osc=_audioCtx.createOscillator(),gain=_audioCtx.createGain();
+    osc.connect(gain);gain.connect(_audioCtx.destination);
+    osc.type='sine';
+    osc.frequency.setValueAtTime(300,_audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(480,_audioCtx.currentTime+0.12);
+    gain.gain.setValueAtTime(0.15,_audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,_audioCtx.currentTime+0.15);
+    osc.start();osc.stop(_audioCtx.currentTime+0.15);
+  }catch(e){}
+}
+
+function placeBall(p){
+  holder=p;
+  const pos=POS[p];
+  const ball=document.getElementById('ball');
+  ball.style.left=(pos.x-13)+'px';
+  ball.style.top=(pos.y-13)+'px';
+  [1,2,3].forEach(n=>document.getElementById('p'+n).classList.toggle('has-ball',n===p));
+  const isHuman=(p===2);
+  ['p1','p3'].forEach(id=>document.getElementById(id).classList.toggle('clickable',isHuman));
+  document.getElementById('statusbar').textContent=isHuman?'你持有球 — 點擊對方傳球':'';
+}
+
+function showHappyFace(p){
+  const neutral=document.getElementById('face'+p+'-neutral');
+  const happy=document.getElementById('face'+p+'-happy');
+  if(!neutral||!happy)return;
+  neutral.setAttribute('visibility','hidden');
+  happy.setAttribute('visibility','visible');
+  if(faceTimers[p])clearTimeout(faceTimers[p]);
+  faceTimers[p]=setTimeout(()=>{
+    neutral.setAttribute('visibility','visible');
+    happy.setAttribute('visibility','hidden');
+  },1200);
+}
+
+function animateBall(from,to,cb){
+  if(!gameOver)playThrowSound();
+  const ball=document.getElementById('ball');
+  const s=POS[from],e=POS[to];
+  const dist=Math.hypot(e.x-s.x,e.y-s.y);
+  const dur=Math.max(900,Math.min(1400,dist*1.6));
+  const start=performance.now();
+  function tick(now){
+    if(gameOver)return;
+    const t=Math.min((now-start)/dur,1);
+    const ease=t<.5?2*t*t:-1+(4-2*t)*t;
+    const arc=Math.sin(Math.PI*t)*65;
+    ball.style.left=(s.x+(e.x-s.x)*ease-13)+'px';
+    ball.style.top=(s.y+(e.y-s.y)*ease-arc-13)+'px';
+    if(t<1){requestAnimationFrame(tick);}
+    else{if(!gameOver)playCatchSound();showHappyFace(to);placeBall(to);cb&&cb();}
+  }
+  requestAnimationFrame(tick);
+}
+
+function runThrows(){
+  if(gameOver)return;
+  if(throwIdx>=THROWS.length){endGame();return;}
+  const ev=THROWS[throwIdx];
+  const from=holder;
+  if(ev.to===2){
+    setTimeout(()=>{
+      animateBall(from,2,()=>{waitingHuman=true;throwIdx++;});
+    },ev.d);
+  } else {
+    setTimeout(()=>{
+      animateBall(from,ev.to,()=>{throwIdx++;runThrows();});
+    },ev.d);
+  }
+}
+
+function humanThrowTo(target){
+  if(!waitingHuman||holder!==2)return;
+  waitingHuman=false;
+  document.getElementById('statusbar').textContent='';
+  animateBall(2,target,()=>runThrows());
+}
+
+function endGame(){
+  gameOver=true;
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('end-screen').style.display='flex';
+}
+
+function startGame(){
+  document.getElementById('connecting-screen').style.display='none';
+  document.getElementById('game-screen').style.display='flex';
+  placeBall(1);
+  document.getElementById('p1').addEventListener('click',()=>humanThrowTo(1));
+  document.getElementById('p3').addEventListener('click',()=>humanThrowTo(3));
+  runThrows();
+}
+
+window.addEventListener('load',()=>setTimeout(startGame,3000));
+</script>
+</body>
+</html>
